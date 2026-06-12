@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <title>เกมผจญภัยระบบร่างกายมนุษย์ โดย Gifted NK, 2026 </title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Mali (Cute Thai Font) -->
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 for Popups -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        /* Base & Typography */
+        body {
+            font-family: 'Mali', cursive;
+            background-color: #f0fdf4; /* Pastel Green bg */
+            margin: 0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Mobile Container for Desktop View */
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0f2fe 0%, #fce7f3 100%);
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Screen Management */
+        .screen {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+            flex-direction: column;
+        }
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes pulse-fast { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes bounce-custom { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(3deg); } }
+
+        .animate-pulse-btn { animation: pulse-fast 1.5s infinite; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        
+        /* Drag & Drop Styles */
+        .drop-zone {
+            border: 3px dashed #cbd5e1;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            background-color: rgba(255,255,255,0.5);
+        }
+        .drop-zone.hover {
+            background-color: #bbf7d0;
+            border-color: #22c55e;
+            transform: scale(1.05);
+        }
+        .draggable {
+            touch-action: none; /* Prevent scrolling on mobile while dragging */
+            cursor: grab;
+            transition: transform 0.1s;
+        }
+        .draggable:active { cursor: grabbing; }
+
+        /* Print Styles for Certificate */
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            .app-container { box-shadow: none; max-width: none; background: none; }
+            /* Hide all screens by default during print */
+            .screen { display: none !important; }
+            /* Show ONLY certificate screen and make it fill A4 landscape */
+            #screen-certificate {
+                display: flex !important;
+                position: absolute;
+                top: 0; left: 0;
+                width: 297mm;
+                height: 210mm;
+                padding: 0;
+                justify-content: center;
+                align-items: center;
+            }
+            .print-hidden { display: none !important; }
+            @page { size: A4 landscape; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app">
+
+    <!-- ==================== 1. หน้าเริ่มเกม (Start Screen) ==================== -->
+    <div id="screen-start" class="screen active justify-center items-center text-center">
+        <div class="text-6xl mb-4 animate-float">🧬🦠🔬</div>
+        <h1 class="text-4xl font-bold text-blue-600 drop-shadow-md mb-2">ผจญภัย</h1>
+        <h2 class="text-3xl font-bold text-pink-500 drop-shadow-md mb-8">ระบบร่างกายมนุษย์</h2>
+        <div class="text-8xl mb-8 animate-float" style="animation-delay: 0.5s;">🧑‍🔬</div>
+        
+        <button onclick="navTo('screen-register')" class="animate-pulse-btn w-64 bg-gradient-to-r from-green-400 to-blue-500 text-white text-2xl font-bold py-4 px-8 rounded-full shadow-lg border-4 border-white mb-4 hover:opacity-90 active:scale-95 transition-transform">
+            เริ่มเล่นเลย! 🚀
+        </button>
+        <button onclick="showHowToPlay()" class="w-64 bg-white text-blue-500 text-xl font-bold py-3 px-8 rounded-full shadow border-2 border-blue-200 hover:bg-blue-50 active:scale-95 transition-transform">
+            วิธีเล่น 📖
+        </button>
+    </div>
+
+    <!-- ==================== 2. หน้าลงทะเบียน (Registration) ==================== -->
+    <div id="screen-register" class="screen">
+        <div class="bg-white/80 p-6 rounded-3xl shadow-xl mt-10 backdrop-blur-sm border-2 border-pink-200">
+            <h2 class="text-2xl font-bold text-center text-pink-500 mb-6 flex items-center justify-center gap-2">
+                <span>📝</span> บัตรประจำตัวนักทดลอง
+            </h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-bold mb-1">ชื่อ-นามสกุล</label>
+                    <input type="text" id="reg-name" class="w-full px-4 py-3 rounded-xl border-2 border-blue-200 focus:border-blue-500 focus:outline-none text-lg" placeholder="ด.ช. / ด.ญ. ...">
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-gray-700 font-bold mb-1">ชั้น</label>
+                        <select id="reg-class" class="w-full px-4 py-3 rounded-xl border-2 border-blue-200 focus:border-blue-500 focus:outline-none text-lg">
+                            <option value="ป.6/1">ป.6/1</option>
+                            <option value="ป.6/2">ป.6/2</option>
+                            <option value="ป.6/3">ป.6/3</option>
+                            <option value="ป.6/4">ป.6/4</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-gray-700 font-bold mb-1">เลขที่</label>
+                        <input type="number" id="reg-roll" class="w-full px-4 py-3 rounded-xl border-2 border-blue-200 focus:border-blue-500 focus:outline-none text-lg" placeholder="1-50">
+                    </div>
+                </div>
+                <button onclick="saveProfile()" class="w-full bg-pink-500 text-white text-xl font-bold py-4 rounded-xl shadow-md border-b-4 border-pink-600 active:translate-y-1 active:border-b-0 mt-4">
+                    ยืนยันข้อมูล ✔️
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 3. หน้าเลือกด่าน (Level Selection) ==================== -->
+    <div id="screen-levels" class="screen">
+        <div class="flex justify-between items-center mb-6 bg-white p-3 rounded-2xl shadow">
+            <div class="font-bold text-blue-600" id="display-name">ผู้เล่น: -</div>
+            <div class="font-bold text-yellow-500 flex items-center gap-1">⭐ <span id="total-stars">0</span>/18</div>
+        </div>
+        
+        <h2 class="text-center text-3xl font-bold text-indigo-600 mb-6">เลือกภารกิจ 🗺️</h2>
+        
+        <div class="grid grid-cols-2 gap-4" id="level-grid">
+            <!-- Levels generated by JS -->
+        </div>
+
+        <button id="btn-certificate" onclick="showCertificate()" class="hidden animate-pulse-btn w-full mt-8 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-xl font-bold py-4 rounded-2xl shadow-lg border-2 border-yellow-200">
+            🏆 รับเกียรติบัตรของคุณ!
+        </button>
+    </div>
+
+    <!-- ==================== 4. ด่านลากวาง (Drag & Drop) ==================== -->
+    <div id="screen-dragdrop" class="screen">
+        <div class="flex justify-between items-center mb-4">
+            <button onclick="navTo('screen-levels')" class="bg-gray-200 px-4 py-2 rounded-lg font-bold">⬅️ กลับ</button>
+            <div class="text-xl font-bold text-red-500">⏱️ <span id="dd-timer">30</span> วิ</div>
+        </div>
+        
+        <div class="text-center mb-2">
+            <h2 class="text-2xl font-bold text-blue-600">ลากอวัยวะไปวางให้ถูกที่!</h2>
+        </div>
+
+        <!-- Body Area -->
+        <div class="relative bg-white rounded-3xl p-4 shadow-inner flex-1 flex flex-col justify-center items-center border-4 border-blue-100 mt-2 mb-4">
+            <div class="w-48 h-[300px] relative border-2 border-dashed border-gray-300 rounded-[50px] bg-blue-50 flex flex-col justify-around items-center py-4">
+                <div class="absolute -top-6 text-gray-400 font-bold">รูปร่างกาย</div>
+                <div id="drop-brain" class="drop-zone w-20 h-20" data-organ="brain"><span class="text-sm text-gray-400">สมอง</span></div>
+                <div id="drop-lungs" class="drop-zone w-20 h-20" data-organ="lungs"><span class="text-sm text-gray-400">ปอด</span></div>
+                <div id="drop-heart" class="drop-zone w-20 h-20" data-organ="heart"><span class="text-sm text-gray-400">หัวใจ</span></div>
+                <div id="drop-stomach" class="drop-zone w-20 h-20" data-organ="stomach"><span class="text-sm text-gray-400">กระเพาะ</span></div>
+            </div>
+        </div>
+
+        <!-- Tray Area -->
+        <div class="bg-yellow-100 p-4 rounded-2xl shadow grid grid-cols-4 gap-2 border-2 border-yellow-300 min-h-[100px]" id="drag-tray">
+            <div id="drag-lungs" class="draggable text-4xl bg-white rounded-xl shadow p-2 flex justify-center items-center border-2 border-gray-200" data-organ="lungs">🫁</div>
+            <div id="drag-brain" class="draggable text-4xl bg-white rounded-xl shadow p-2 flex justify-center items-center border-2 border-gray-200" data-organ="brain">🧠</div>
+            <div id="drag-stomach" class="draggable text-4xl bg-white rounded-xl shadow p-2 flex justify-center items-center border-2 border-gray-200" data-organ="stomach">🍱</div>
+            <div id="drag-heart" class="draggable text-4xl bg-white rounded-xl shadow p-2 flex justify-center items-center border-2 border-gray-200" data-organ="heart">🫀</div>
+        </div>
+    </div>
+
+    <!-- ==================== 5. ด่านตอบคำถาม (Quiz) ==================== -->
+    <div id="screen-quiz" class="screen">
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="navTo('screen-levels')" class="bg-white px-4 py-2 rounded-full font-bold shadow text-gray-600 text-sm">❌ ออก</button>
+            <div class="bg-blue-100 px-4 py-2 rounded-full font-bold text-blue-600">ข้อ <span id="quiz-progress">1/3</span></div>
+        </div>
+
+        <div class="flex-1 flex flex-col">
+            <div class="bg-white p-6 rounded-3xl shadow-lg border-b-4 border-blue-200 mb-6 relative mt-4">
+                <!-- TTS Button -->
+                <button onclick="speakCurrentQuestion()" class="absolute -top-5 right-4 bg-yellow-400 text-white w-12 h-12 rounded-full shadow-md text-2xl flex justify-center items-center active:scale-95 border-2 border-white">
+                    🔊
+                </button>
+                <h3 class="text-2xl font-bold text-gray-800 text-center mt-2" id="quiz-question">คำถาม...?</h3>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4" id="quiz-choices">
+                <!-- Choices generated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 6. หน้าแสดงผลลัพธ์ (Result) ==================== -->
+    <div id="screen-result" class="screen justify-center items-center text-center">
+        <div class="bg-white p-8 rounded-3xl shadow-xl w-full border-4 border-yellow-300">
+            <h2 class="text-4xl font-bold mb-4" id="result-title">เยี่ยมมาก!</h2>
+            <div class="flex justify-center gap-2 mb-6 text-6xl" id="result-stars">
+                <!-- Stars -->
+            </div>
+            <p class="text-xl text-gray-600 mb-8 font-bold">คะแนน: <span id="result-score" class="text-blue-600 text-2xl">0</span></p>
+            
+            <div class="space-y-4">
+                <button onclick="navTo('screen-levels')" class="w-full bg-blue-500 text-white text-xl font-bold py-4 rounded-xl shadow border-b-4 border-blue-600 active:translate-y-1 active:border-b-0">
+                    กลับหน้าเลือกด่าน
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 7. หน้าเกียรติบัตร (Certificate) ==================== -->
+    <div id="screen-certificate" class="screen justify-center items-center bg-gray-900/50 absolute top-0 left-0 w-full z-50">
+        <!-- The Certificate Card -->
+        <div class="bg-[#FFFDF0] w-[95%] max-w-[800px] aspect-[1.414/1] rounded-lg shadow-2xl relative border-[10px] border-[#D4AF37] p-8 flex flex-col justify-center items-center text-center mx-auto" style="box-sizing: border-box;">
+            <!-- Decorative Corners -->
+            <div class="absolute top-2 left-2 text-4xl text-yellow-500">✨</div>
+            <div class="absolute top-2 right-2 text-4xl text-yellow-500">✨</div>
+            <div class="absolute bottom-2 left-2 text-4xl text-yellow-500">✨</div>
+            <div class="absolute bottom-2 right-2 text-4xl text-yellow-500">✨</div>
+
+            <h1 class="text-4xl md:text-5xl font-bold text-[#B8860B] mb-2 drop-shadow-sm">เกียรติบัตรฉบับนี้</h1>
+            <p class="text-lg md:text-xl text-gray-600 mb-6">ขอมอบไว้เพื่อแสดงว่า</p>
+            
+            <h2 id="cert-name" class="text-3xl md:text-4xl font-bold text-blue-800 mb-2 border-b-2 border-dotted border-gray-400 pb-2 inline-block min-w-[300px]">ชื่อ - นามสกุล</h2>
+            <p class="text-lg text-gray-700 mb-6">นักเรียนชั้น <span id="cert-class">ป.6/X</span> เลขที่ <span id="cert-roll">XX</span></p>
+
+            <p class="text-xl md:text-2xl font-bold text-gray-800 mb-6 leading-relaxed max-w-lg">
+                ได้ผ่านการทดสอบความรู้และพิชิตภารกิจ<br>
+                <span class="text-pink-600">"เกมผจญภัยระบบร่างกายมนุษย์"</span><br>
+                ด้วยคะแนนยอดเยี่ยม
+            </p>
+
+            <div class="flex justify-between w-full max-w-md mt-4 text-sm md:text-base font-bold text-gray-600">
+                <div>ให้ไว้ ณ วันที่<br><span id="cert-date" class="text-indigo-600">--</span></div>
+                <div>ลงชื่อ<br><span class="font-normal italic text-blue-500 text-lg">นักวิทยาศาสตร์น้อย</span><br>ระบบอัจฉริยะ</div>
+            </div>
+        </div>
+
+        <!-- Print Buttons (Hidden in print) -->
+        <div class="print-hidden mt-6 flex gap-4">
+            <button onclick="window.print()" class="bg-green-500 text-white font-bold py-3 px-8 rounded-full shadow-lg border-2 border-white hover:bg-green-600">
+                🖨️ พิมพ์เกียรติบัตร (PDF)
+            </button>
+            <button onclick="navTo('screen-levels')" class="bg-red-500 text-white font-bold py-3 px-8 rounded-full shadow-lg border-2 border-white hover:bg-red-600">
+                ปิด
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<!-- JavaScript Logic -->
+<script>
+    /* ==================== 1. State & Data ==================== */
+    let player = { name: '', className: '', rollNo: '' };
+    
+    // Config for levels
+    const levelData = [
+        { id: 1, title: 'อวัยวะพื้นฐาน', icon: '🧩', color: 'bg-orange-100 border-orange-400', type: 'drag', stars: 0, score: 0 },
+        { id: 2, title: 'ระบบหายใจ', icon: '🫁', color: 'bg-blue-100 border-blue-400', type: 'quiz', stars: 0, score: 0 },
+        { id: 3, title: 'ระบบย่อยอาหาร', icon: '🍱', color: 'bg-green-100 border-green-400', type: 'quiz', stars: 0, score: 0 },
+        { id: 4, title: 'ระบบไหลเวียนเลือด', icon: '🫀', color: 'bg-red-100 border-red-400', type: 'quiz', stars: 0, score: 0 },
+        { id: 5, title: 'ระบบประสาท', icon: '🧠', color: 'bg-yellow-100 border-yellow-400', type: 'quiz', stars: 0, score: 0 },
+        { id: 6, title: 'กระดูกและขับถ่าย', icon: '🦴', color: 'bg-purple-100 border-purple-400', type: 'quiz', stars: 0, score: 0 }
+    ];
+
+    // Questions Database
+    const quizDatabase = {
+        2: [
+            { q: "ปอดมีหน้าที่อะไรในร่างกาย?", a: "แลกเปลี่ยนก๊าซ", choices: ["ย่อยอาหาร", "แลกเปลี่ยนก๊าซ", "สูบฉีดเลือด", "กรองของเสีย"] },
+            { q: "เราหายใจเอาแก๊สอะไรเข้าสู่ร่างกาย?", a: "ออกซิเจน", choices: ["คาร์บอนไดออกไซด์", "ไนโตรเจน", "ออกซิเจน", "ฮีเลียม"] },
+            { q: "แก๊สใดที่ร่างกายขับออกมาตอนหายใจออก?", a: "คาร์บอนไดออกไซด์", choices: ["ออกซิเจน", "ไฮโดรเจน", "คาร์บอนไดออกไซด์", "คาร์บอนมอนอกไซด์"] }
+        ],
+        3: [
+            { q: "การย่อยอาหารเริ่มต้นที่อวัยวะใด?", a: "ปาก", choices: ["กระเพาะอาหาร", "ลำไส้เล็ก", "หลอดอาหาร", "ปาก"] },
+            { q: "อวัยวะใดดูดซึมสารอาหารมากที่สุด?", a: "ลำไส้เล็ก", choices: ["กระเพาะอาหาร", "ลำไส้ใหญ่", "ลำไส้เล็ก", "ตับ"] },
+            { q: "น้ำลายในปากช่วยย่อยสารอาหารประเภทใด?", a: "คาร์โบไฮเดรต", choices: ["โปรตีน", "ไขมัน", "คาร์โบไฮเดรต", "วิตามิน"] }
+        ],
+        4: [
+            { q: "หัวใจทำหน้าที่อะไร?", a: "สูบฉีดเลือด", choices: ["แลกเปลี่ยนก๊าซ", "ย่อยอาหาร", "สูบฉีดเลือด", "สร้างเม็ดเลือด"] },
+            { q: "หัวใจของมนุษย์มีทั้งหมดกี่ห้อง?", a: "4 ห้อง", choices: ["2 ห้อง", "3 ห้อง", "4 ห้อง", "5 ห้อง"] },
+            { q: "หลอดเลือดใดนำเลือดออกจากหัวใจ?", a: "หลอดเลือดแดง", choices: ["หลอดเลือดดำ", "หลอดเลือดแดง", "หลอดเลือดฝอย", "ท่อน้ำเหลือง"] }
+        ],
+        5: [
+            { q: "ศูนย์กลางการสั่งการของระบบประสาทคืออะไร?", a: "สมอง", choices: ["ไขสันหลัง", "หัวใจ", "สมอง", "เส้นประสาท"] },
+            { q: "ส่วนใดเชื่อมต่อสมองกับเส้นประสาททั่วร่างกาย?", a: "ไขสันหลัง", choices: ["กระดูกสันหลัง", "กล้ามเนื้อ", "หลอดเลือด", "ไขสันหลัง"] },
+            { q: "เมื่อเราจับของร้อน กล้ามเนื้อจะชักมือกลับทันที เรียกว่าอะไร?", a: "รีเฟล็กซ์", choices: ["รีเฟล็กซ์", "การย่อย", "การหดตัว", "การเต้นของหัวใจ"] }
+        ],
+        6: [
+            { q: "ผู้ใหญ่โดยทั่วไปมีกระดูกประมาณกี่ชิ้น?", a: "206 ชิ้น", choices: ["100 ชิ้น", "206 ชิ้น", "300 ชิ้น", "400 ชิ้น"] },
+            { q: "อวัยวะใดทำหน้าที่กรองของเสียออกมาเป็นปัสสาวะ?", a: "ไต", choices: ["ตับ", "ปอด", "ไต", "ลำไส้ใหญ่"] },
+            { q: "กล้ามเนื้อชนิดใดที่เราสามารถควบคุมได้?", a: "กล้ามเนื้อลาย", choices: ["กล้ามเนื้อเรียบ", "กล้ามเนื้อหัวใจ", "กล้ามเนื้อลาย", "กล้ามเนื้อกระเพาะ"] }
+        ]
+    };
+
+    let currentLevel = null;
+    let currentQuizQuestions = [];
+    let currentQuestionIndex = 0;
+    let tempScore = 0;
+
+    /* ==================== 2. Sound System (Web Audio API - No external links) ==================== */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playTone(freq, type, duration, vol=0.1) {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    const sfx = {
+        click: () => playTone(600, 'sine', 0.1),
+        correct: () => { playTone(600, 'sine', 0.1); setTimeout(()=>playTone(800, 'sine', 0.2), 100); },
+        wrong: () => { playTone(200, 'sawtooth', 0.3, 0.2); setTimeout(()=>playTone(150, 'sawtooth', 0.4, 0.2), 150); },
+        win: () => { 
+            [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                setTimeout(() => playTone(freq, 'sine', 0.3), i * 150);
+            });
+        }
+    };
+
+    /* ==================== 3. Core Functions ==================== */
+    function navTo(screenId) {
+        sfx.click();
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    function showHowToPlay() {
+        sfx.click();
+        Swal.fire({
+            title: 'วิธีเล่น 🎮',
+            html: `
+                <div class="text-left">
+                <b>1. ด่านลากวาง:</b> ลากอวัยวะไปวางให้ตรงจุดภายใน 30 วินาที<br><br>
+                <b>2. ด่านตอบคำถาม:</b> อ่านคำถามหรือกดปุ่ม 🔊 เพื่อฟังเสียง แล้วเลือกคำตอบที่ถูกต้อง<br><br>
+                สะสมดาวให้ครบทุกด่านเพื่อรับ <b>เกียรติบัตรนักวิทยาศาสตร์น้อย!</b> 🌟
+                </div>
+            `,
+            confirmButtonText: 'เข้าใจแล้ว!',
+            confirmButtonColor: '#3b82f6'
+        });
+    }
+
+    function saveProfile() {
+        const name = document.getElementById('reg-name').value.trim();
+        const cls = document.getElementById('reg-class').value;
+        const roll = document.getElementById('reg-roll').value.trim();
+
+        if(!name || !roll) {
+            Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบถ้วนนะจ๊ะ!', 'warning');
+            sfx.wrong();
+            return;
+        }
+
+        player = { name, className: cls, rollNo: roll };
+        document.getElementById('display-name').innerText = `นักวิทยาศาสตร์: ${name}`;
+        
+        sfx.correct();
+        renderLevels();
+        navTo('screen-levels');
+    }
+
+    function renderLevels() {
+        const grid = document.getElementById('level-grid');
+        grid.innerHTML = '';
+        let totalStars = 0;
+        let levelsCompleted = 0;
+
+        levelData.forEach((lvl, index) => {
+            totalStars += lvl.stars;
+            if(lvl.stars > 0) levelsCompleted++;
+
+            // Check if locked (Must play in order, except level 1)
+            let isLocked = index > 0 && levelData[index-1].stars === 0;
+
+            const btn = document.createElement('button');
+            btn.className = `p-4 rounded-2xl shadow-md border-b-4 flex flex-col items-center justify-center relative transition-transform ${isLocked ? 'bg-gray-200 border-gray-300 opacity-70 grayscale' : lvl.color + ' active:translate-y-1 active:border-b-0'}`;
+            
+            let starsHtml = '';
+            for(let i=0; i<3; i++) {
+                starsHtml += `<span class="text-xl ${i < lvl.stars ? 'text-yellow-400 drop-shadow' : 'text-gray-300'}">⭐</span>`;
+            }
+
+            btn.innerHTML = `
+                <div class="text-4xl mb-2">${isLocked ? '🔒' : lvl.icon}</div>
+                <div class="font-bold text-gray-700 text-sm mb-1">${lvl.title}</div>
+                <div class="flex">${isLocked ? '-' : starsHtml}</div>
+            `;
+
+            if(!isLocked) {
+                btn.onclick = () => startLevel(lvl.id);
+            } else {
+                btn.onclick = () => { sfx.wrong(); Swal.fire('ด่านถูกล็อค', 'ต้องผ่านด่านก่อนหน้าก่อนนะ!', 'info'); }
+            }
+
+            grid.appendChild(btn);
+        });
+
+        document.getElementById('total-stars').innerText = totalStars;
+
+        // Show certificate if all 6 levels have at least 1 star
+        if(levelsCompleted === 6) {
+            document.getElementById('btn-certificate').classList.remove('hidden');
+        }
+    }
+
+    function startLevel(id) {
+        currentLevel = levelData.find(l => l.id === id);
+        tempScore = 0;
+        
+        if(currentLevel.type === 'drag') {
+            initDragDrop();
+            navTo('screen-dragdrop');
+        } else {
+            initQuiz();
+            navTo('screen-quiz');
+        }
+    }
+
+    /* ==================== 4. Drag & Drop Logic (Touch + Mouse) ==================== */
+    let ddTimer;
+    let ddTimeLeft;
+    let organsPlaced = 0;
+    let activeDragObj = null;
+    let initialX, initialY;
+
+    function initDragDrop() {
+        organsPlaced = 0;
+        ddTimeLeft = 30;
+        document.getElementById('dd-timer').innerText = ddTimeLeft;
+        
+        // Reset Drop Zones
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.innerHTML = `<span class="text-sm text-gray-400">${zone.dataset.organ === 'brain'?'สมอง': zone.dataset.organ==='lungs'?'ปอด': zone.dataset.organ==='heart'?'หัวใจ':'กระเพาะ'}</span>`;
+            zone.classList.remove('bg-green-100', 'border-green-500');
+        });
+
+        // Reset Tray
+        const tray = document.getElementById('drag-tray');
+        const organs = [
+            {id:'drag-lungs', data:'lungs', icon:'🫁'}, {id:'drag-brain', data:'brain', icon:'🧠'},
+            {id:'drag-stomach', data:'stomach', icon:'🍱'}, {id:'drag-heart', data:'heart', icon:'🫀'}
+        ].sort(() => Math.random() - 0.5); // Shuffle
+
+        tray.innerHTML = '';
+        organs.forEach(o => {
+            const el = document.createElement('div');
+            el.id = o.id; el.className = 'draggable text-4xl bg-white rounded-xl shadow p-2 flex justify-center items-center border-2 border-gray-200 z-10';
+            el.dataset.organ = o.data; el.innerText = o.icon;
+            tray.appendChild(el);
+            
+            // Add Events
+            el.addEventListener('mousedown', dragStart);
+            el.addEventListener('touchstart', dragStart, {passive: false});
+        });
+
+        clearInterval(ddTimer);
+        ddTimer = setInterval(() => {
+            ddTimeLeft--;
+            document.getElementById('dd-timer').innerText = ddTimeLeft;
+            if(ddTimeLeft <= 0) {
+                clearInterval(ddTimer);
+                endLevelDragDrop(false);
+            }
+        }, 1000);
+    }
+
+    // Unified Drag Handlers
+    function dragStart(e) {
+        if(e.type === 'touchstart') e.preventDefault();
+        activeDragObj = e.target;
+        activeDragObj.style.position = 'absolute';
+        activeDragObj.style.zIndex = '50';
+        
+        // Save initial pos for snap back
+        const rect = activeDragObj.getBoundingClientRect();
+        initialX = rect.left; initialY = rect.top;
+
+        document.addEventListener('mousemove', dragMove);
+        document.addEventListener('touchmove', dragMove, {passive: false});
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchend', dragEnd);
+        moveItem(e);
+    }
+
+    function dragMove(e) {
+        if(!activeDragObj) return;
+        if(e.type === 'touchmove') e.preventDefault();
+        moveItem(e);
+    }
+
+    function moveItem(e) {
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        activeDragObj.style.left = (clientX - activeDragObj.offsetWidth/2) + 'px';
+        activeDragObj.style.top = (clientY - activeDragObj.offsetHeight/2) + 'px';
+    }
+
+    function dragEnd(e) {
+        document.removeEventListener('mousemove', dragMove);
+        document.removeEventListener('touchmove', dragMove);
+        document.removeEventListener('mouseup', dragEnd);
+        document.removeEventListener('touchend', dragEnd);
+
+        if(!activeDragObj) return;
+
+        // Check Intersection
+        const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+        const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+        
+        // Hide temporarily to find element underneath
+        activeDragObj.style.display = 'none';
+        const elemBelow = document.elementFromPoint(clientX, clientY);
+        activeDragObj.style.display = 'flex';
+
+        const dropZone = elemBelow ? elemBelow.closest('.drop-zone') : null;
+
+        if(dropZone && dropZone.dataset.organ === activeDragObj.dataset.organ) {
+            // Correct!
+            sfx.correct();
+            dropZone.innerHTML = `<div class="text-4xl">${activeDragObj.innerText}</div>`;
+            dropZone.classList.add('bg-green-100', 'border-green-500');
+            activeDragObj.remove();
+            organsPlaced++;
+            tempScore += 25; // 4 organs = 100 points
+            if(organsPlaced === 4) {
+                clearInterval(ddTimer);
+                setTimeout(() => endLevelDragDrop(true), 500);
+            }
+        } else {
+            // Wrong, snap back
+            sfx.wrong();
+            activeDragObj.style.position = 'static';
+        }
+        activeDragObj = null;
+    }
+
+    function endLevelDragDrop(success) {
+        if(success) sfx.win();
+        else sfx.wrong();
+        
+        let stars = 0;
+        if(success && ddTimeLeft > 15) stars = 3;
+        else if (success && ddTimeLeft > 0) stars = 2;
+        else if (organsPlaced >= 2) stars = 1;
+
+        showResultScreen(stars, tempScore);
+    }
+
+    /* ==================== 5. Quiz Logic ==================== */
+    function initQuiz() {
+        // Deep copy and shuffle questions
+        currentQuizQuestions = [...quizDatabase[currentLevel.id]].sort(() => Math.random() - 0.5);
+        currentQuestionIndex = 0;
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const qData = currentQuizQuestions[currentQuestionIndex];
+        document.getElementById('quiz-progress').innerText = `${currentQuestionIndex + 1}/${currentQuizQuestions.length}`;
+        document.getElementById('quiz-question').innerText = qData.q;
+
+        const choicesContainer = document.getElementById('quiz-choices');
+        choicesContainer.innerHTML = '';
+
+        // Shuffle choices
+        const choices = [...qData.choices].sort(() => Math.random() - 0.5);
+
+        choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'bg-white p-4 rounded-2xl shadow border-2 border-blue-100 text-xl font-bold text-gray-700 hover:bg-blue-50 active:scale-95 transition-all text-left flex items-center gap-3';
+            btn.innerHTML = `<span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm">💡</span> ${choice}`;
+            
+            btn.onclick = () => handleAnswer(btn, choice === qData.a);
+            choicesContainer.appendChild(btn);
+        });
+    }
+
+    function handleAnswer(btn, isCorrect) {
+        // Disable all buttons
+        const buttons = document.getElementById('quiz-choices').querySelectorAll('button');
+        buttons.forEach(b => b.disabled = true);
+
+        if(isCorrect) {
+            sfx.correct();
+            btn.classList.replace('border-blue-100', 'border-green-500');
+            btn.classList.add('bg-green-100', 'text-green-700');
+            tempScore += Math.floor(100 / currentQuizQuestions.length); // Calculate evenly
+        } else {
+            sfx.wrong();
+            btn.classList.replace('border-blue-100', 'border-red-500');
+            btn.classList.add('bg-red-100', 'text-red-700');
+            
+            // Highlight correct answer
+            const correctAns = currentQuizQuestions[currentQuestionIndex].a;
+            buttons.forEach(b => {
+                if(b.innerText.includes(correctAns)) {
+                    b.classList.replace('border-blue-100', 'border-green-500');
+                    b.classList.add('bg-green-100');
+                }
+            });
+        }
+
+        setTimeout(() => {
+            currentQuestionIndex++;
+            if(currentQuestionIndex < currentQuizQuestions.length) {
+                loadQuestion();
+            } else {
+                endQuiz();
+            }
+        }, 1500);
+    }
+
+    function endQuiz() {
+        let stars = 0;
+        if(tempScore === 100) stars = 3;
+        else if (tempScore >= 66) stars = 2;
+        else if (tempScore >= 33) stars = 1;
+
+        if(stars > 0) sfx.win();
+        else sfx.wrong();
+
+        showResultScreen(stars, tempScore);
+    }
+
+    /* ==================== 6. Text to Speech ==================== */
+    function speakCurrentQuestion() {
+        if(!window.speechSynthesis) return;
+        const text = document.getElementById('quiz-question').innerText;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'th-TH';
+        utterance.rate = 0.9; // Slightly slower for kids
+        speechSynthesis.speak(utterance);
+    }
+
+    /* ==================== 7. Result & Certificate Logic ==================== */
+    function showResultScreen(stars, score) {
+        document.getElementById('result-score').innerText = score;
+        
+        let title = 'พยายามอีกนิดนะ!';
+        if(stars === 3) title = 'สมบูรณ์แบบ! 🏆';
+        else if(stars === 2) title = 'เก่งมาก! 🌟';
+        else if(stars === 1) title = 'ผ่านด่าน! 👍';
+        
+        document.getElementById('result-title').innerText = title;
+
+        let starsHtml = '';
+        for(let i=0; i<3; i++) {
+            if(i < stars) starsHtml += '<span class="text-yellow-400 animate-bounce-custom" style="animation-delay: '+ (i*0.2) +'s">⭐</span>';
+            else starsHtml += '<span class="text-gray-300">⭐</span>';
+        }
+        document.getElementById('result-stars').innerHTML = starsHtml;
+
+        // Save progress
+        if(stars > currentLevel.stars) {
+            currentLevel.stars = stars;
+            currentLevel.score = score;
+        }
+
+        renderLevels();
+        navTo('screen-result');
+    }
+
+    function showCertificate() {
+        sfx.win();
+        
+        // Set Data
+        document.getElementById('cert-name').innerText = player.name;
+        document.getElementById('cert-class').innerText = player.className;
+        document.getElementById('cert-roll').innerText = player.rollNo;
+        
+        // Format Thai Date
+        const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+        const thDate = new Date().toLocaleDateString('th-TH', dateOptions);
+        document.getElementById('cert-date').innerText = thDate;
+
+        navTo('screen-certificate');
+    }
+
+    // Audio context initializer trick for browsers
+    document.body.addEventListener('click', () => {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+    }, {once:true});
+
+</script>
+</body>
+</html>
